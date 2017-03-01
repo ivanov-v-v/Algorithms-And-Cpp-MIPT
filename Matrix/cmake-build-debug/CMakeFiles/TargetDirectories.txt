@@ -1,0 +1,3 @@
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/cmake-build-debug/CMakeFiles/Matrix.dir

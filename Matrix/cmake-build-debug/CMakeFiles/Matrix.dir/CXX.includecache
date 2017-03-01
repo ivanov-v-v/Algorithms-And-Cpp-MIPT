@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/headers/rational.h
+iostream
+-
+algorithm
+-
+vector
+-
+string
+-
+
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/main.cpp
+headers/rational.h
+/home/vvi/Software/JetBrains/clion-2016.2.2/projects/Matrix/headers/rational.h
+bits/stdc++.h
+-
+
