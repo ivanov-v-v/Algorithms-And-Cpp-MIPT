@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/vvi/akos/lab-1/uniq/main.cpp
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+err.h
+-
+unistd.h
+-
+locale.h
+-
+

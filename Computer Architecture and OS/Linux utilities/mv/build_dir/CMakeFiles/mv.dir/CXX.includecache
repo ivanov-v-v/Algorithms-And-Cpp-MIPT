@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/vvi/akos/lab-1/mv/main.cpp
+stdio.h
+-
+stdlib.h
+-
+getopt.h
+-
+sys/types.h
+-
+sys/stat.h
+-
+unistd.h
+-
+libgen.h
+-
+errno.h
+-
+ftw.h
+-
+
