@@ -1,1 +1,1 @@
-/usr/bin/c++      CMakeFiles/mv.dir/main.cpp.o  -o mv 
+/usr/bin/c++    -g   CMakeFiles/mv.dir/main.cpp.o  -o mv 

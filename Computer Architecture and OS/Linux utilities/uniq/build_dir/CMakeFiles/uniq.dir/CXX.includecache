@@ -15,6 +15,10 @@ string.h
 -
 err.h
 -
+sys/types.h
+-
+sys/stat.h
+-
 unistd.h
 -
 locale.h

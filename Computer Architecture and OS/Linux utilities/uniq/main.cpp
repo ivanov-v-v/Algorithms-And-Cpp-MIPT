@@ -11,14 +11,17 @@
 #include <stdlib.h> 
 #include <string.h> // strcmp()
 #include <err.h>    // err()
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h> // getopt()
 #include <locale.h>
 
 static void display_usage_format(void);
 
 int main(int argc, char** argv) {
-    static size_t MAX_LINE_LEN = sizeof(char) * 1024;
-    static int cflag = 0;
+    size_t MAX_LINE_LEN = sizeof(char) * 1024;
+    int cflag = 0;
+    struct stat statbuf;
 
     FILE* input;
     FILE* output;
@@ -34,31 +37,32 @@ int main(int argc, char** argv) {
                 display_usage_format();
         }
     }
+
     argc -= optind;
     argv += optind;
     if (argc > 2) {
         display_usage_format();
     }
+
     input = stdin;
     output = stdout;
-    if (argc > 0 && argv[0] && strcmp(argv[0], "-")) {
+    if (argc > 0 && strcmp(argv[0], "-")) {
+        if (stat(argv[0], &statbuf)) {
+            err(1, "input file is empty or corrupted");
+        }
         input = fopen(argv[0], "r");
     }
     if (argc > 1 && argv[1]) {
         output = fopen(argv[1], "w");
     }
+
     char* prev_line = (char*)malloc(MAX_LINE_LEN);
     char* curr_line = (char*)malloc(MAX_LINE_LEN);
-
     if (prev_line == NULL || curr_line == NULL) {
-        free(prev_line);
-        free(curr_line);
-        err(1, "Unable to allocate buffer");
+        err(1, "unable to allocate buffer");
     }
     if (fgets(prev_line, MAX_LINE_LEN, input) == NULL) {
-        free(prev_line); 
-        free(curr_line);
-        err(1, "Input file is empty or corrupted.\n");
+        err(1, "input file is empty or corrupted");
     }
     int counter = 1;
     while (fgets(curr_line, MAX_LINE_LEN, input) != NULL) {

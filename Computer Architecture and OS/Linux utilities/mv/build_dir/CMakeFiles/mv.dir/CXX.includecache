@@ -11,6 +11,8 @@ stdio.h
 -
 stdlib.h
 -
+string.h
+-
 getopt.h
 -
 sys/types.h
