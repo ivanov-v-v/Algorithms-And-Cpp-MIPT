@@ -1,11 +1,10 @@
 /* TODO: 
 * 1. Add support of command line options (in particular, verbose-mode);
 * 2. Write unit tests;
-* 3. Check the code with valgrind;
-* 4.* How to implement own class of strings in such a manner,
+* 3.* How to implement own class of strings in such a manner,
 *     that it would be able to use them interchangeably whith c_strings?
-* 5.* Implement recursive copy-and-removal to handle EXTDEV in dir-to-dir copying;
-* 6. Get rid of magical constants.
+* 4.* Implement recursive copy-and-removal to handle EXTDEV in dir-to-dir copying;
+* 5. Get rid of magical constants.
 */
 
 #include <stdio.h>
@@ -21,7 +20,7 @@
 #include <errno.h>
 #include <ftw.h>
 
-#define BUFFSIZE 1024
+#define BUFFSIZE 1024 * sizeof(char)
 
 // removes the file pointed by fpath during recursive pre-order traversal of given directory
 static int unlink_cb(const char *fpath, const struct stat *statbuf, int typeflag, struct FTW *ftwbuf);
@@ -70,8 +69,8 @@ int main(int argc, char** argv) {
 
     char** absolute_paths = (char**)malloc(argc * sizeof(char*));
     for (int i = 1; i < argc; ++i) {
-        absolute_paths[i] = (char*)malloc(BUFFSIZE * sizeof(char));
-        char* parent_dir_path = (char*)malloc(BUFFSIZE * sizeof(char));
+        absolute_paths[i] = (char*)malloc(BUFFSIZE);
+        char* parent_dir_path = (char*)malloc(BUFFSIZE);
         char* ptr_to_last_slash = strrchr(argv[i], '/');
         if (ptr_to_last_slash == NULL) {
             getcwd(parent_dir_path, BUFFSIZE);
@@ -125,11 +124,11 @@ int main(int argc, char** argv) {
             perform_move(absolute_paths[1], absolute_paths[2]);
         } else { // destination path specifies a directory
             char* destdir = absolute_paths[argc - 1];         // dir to move into
-            char* destpath = (char*)malloc(BUFFSIZE * sizeof(char));   // new path for source file/directory
+            char* destpath = (char*)malloc(BUFFSIZE);   // new path for source file/directory
             for (int i = 1; i < argc - 1; ++i) {
                 char* srcpath = absolute_paths[i]; // what to move
                 if (stat(srcpath, &statbuf)) {
-                    char* err_message = (char*)malloc(BUFFSIZE * sizeof(char));
+                    char* err_message = (char*)malloc(BUFFSIZE);
                     snprintf(err_message, BUFFSIZE, "%s: not a file or directory", srcpath);
                     print_message_and_exit(err_message);
                 }

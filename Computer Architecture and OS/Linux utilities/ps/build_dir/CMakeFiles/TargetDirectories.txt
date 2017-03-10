@@ -1,0 +1,3 @@
+/home/vvi/akos/lab-1/ps/build_dir/CMakeFiles/rebuild_cache.dir
+/home/vvi/akos/lab-1/ps/build_dir/CMakeFiles/edit_cache.dir
+/home/vvi/akos/lab-1/ps/build_dir/CMakeFiles/ps.dir
