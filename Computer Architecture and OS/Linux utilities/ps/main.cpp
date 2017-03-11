@@ -8,7 +8,7 @@
 
 #include <dirent.h>     // DIR, dirent...
 
-#include </usr/include/asm/param.h>
+#include <asm/param.h>
 
 #define STAT_PARAMS 52                  // # of parameters in /proc/[pid]/stat dir
 #define BUFFSIZE 1024 * sizeof(char)    // maximal possible buffer length
