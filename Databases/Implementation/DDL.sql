@@ -1,4 +1,4 @@
-﻿-- Schema: AnamnesisAutomated
+-- Schema: AnamnesisAutomated
 
 DROP SCHEMA IF EXISTS logs CASCADE;
 
@@ -111,7 +111,7 @@ CREATE TABLE logs.drugs_received (
     issue_id		SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     drug_id		SERIAL 	NOT NULL,
-    date_of_issue	DATE NOT NULL,
+    date_of_issue	DATE    NOT NULL,
 
     PRIMARY KEY (issue_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
