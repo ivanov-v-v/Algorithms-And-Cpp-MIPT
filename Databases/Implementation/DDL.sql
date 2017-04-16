@@ -29,10 +29,12 @@ CREATE TABLE logs.contact_data (
 );
 
 CREATE TABLE logs.drug_sensitivity (
+    reaction_id		SERIAL 	NOT NULL,
     patient_id		SERIAL 	NOT NULL,
     drug_id		SERIAL 	NOT NULL,
     reaction		TEXT 	NOT NULL,
-    
+
+    PRIMARY KEY (reaction_id),
     FOREIGN KEY (patient_id) REFERENCES logs.patients (patient_id)
 );
 
@@ -49,11 +51,13 @@ CREATE TABLE logs.doctors (
 );
 
 CREATE TABLE logs.doctor_sessions (
+    session_id		SERIAL 	NOT NULL,
     doctor_id		SERIAL 	NOT NULL,
     patient_id		SERIAL 	NOT NULL,
     appointment		TIMESTAMP NOT NULL,
     reason		TEXT	NOT NULL,
 
+    PRIMARY KEY (session_id),
     FOREIGN KEY (doctor_id) REFERENCES logs.doctors (doctor_id),
     FOREIGN KEY (patient_id) REFERENCES logs.patients (patient_id)
 );
@@ -103,11 +107,13 @@ CREATE TABLE logs.drug_contraindications (
     FOREIGN KEY (drug_id) REFERENCES logs.drugs (drug_id)
 );
 
-CREATE TABLE logs.drugs_bought (
+CREATE TABLE logs.drugs_received (
+    issue_id		SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     drug_id		SERIAL 	NOT NULL,
-    purchase_date	DATE,
-    
+    date_of_issue	DATE 	NOT NULL,
+
+    PRIMARY KEY (issue_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
     FOREIGN KEY (drug_id) REFERENCES logs.drugs (drug_id)
 );
@@ -127,10 +133,10 @@ CREATE TABLE logs.analysis_prescription (
     FOREIGN KEY (analysis_id) REFERENCES logs.analyzes (analysis_id)
 );
 
-CREATE TABLE logs.analyzes_made (
+CREATE TABLE logs.analyzes_undergone (
     case_id		SERIAL 	NOT NULL,
     analysis_id		SERIAL 	NOT NULL,
-    purchase_date	DATE,
+    date_of_issue	DATE,
     results		TEXT,
     
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
@@ -159,13 +165,16 @@ CREATE TABLE logs.surgery_contraindications (
     FOREIGN KEY (surgery_id) REFERENCES logs.surgeries (surgery_id)
 );
 
-CREATE TABLE logs.surgeries_performed (
+CREATE TABLE logs.surgeries_undergone (
+    intervention_id	SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     surgery_id		SERIAL 	NOT NULL,
     surgeon_id		SERIAL 	NOT NULL,
     operation_date	DATE 	NOT NULL,
-    
+
+    PRIMARY KEY (intervention_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
     FOREIGN KEY (surgery_id) REFERENCES logs.surgeries (surgery_id),
     FOREIGN KEY (surgeon_id) REFERENCES logs.doctors (doctor_id)  
 );
+
