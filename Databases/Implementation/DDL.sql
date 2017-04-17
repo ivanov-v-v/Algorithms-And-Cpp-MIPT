@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+﻿--Schema: AnamnesisAutomated
+=======
 -- Schema: AnamnesisAutomated
+>>>>>>> dab50959475c3e19863ad41fa7094a8aab6346ff
 
 DROP SCHEMA IF EXISTS logs CASCADE;
 
@@ -15,17 +19,11 @@ CREATE TABLE logs.patients (
     date_of_birth	DATE,
     ethnicity		TEXT,
     relationship_status	TEXT,
-
-    PRIMARY KEY (patient_id)
-);
-
-CREATE TABLE logs.contact_data (
-    patient_id		SERIAL 	NOT NULL,
     address		TEXT,
     phone_number        TEXT,
     email		TEXT,
     
-    FOREIGN KEY (patient_id) REFERENCES logs.patients (patient_id)
+    PRIMARY KEY (patient_id)
 );
 
 CREATE TABLE logs.drug_sensitivity (
@@ -111,7 +109,11 @@ CREATE TABLE logs.drugs_received (
     issue_id		SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     drug_id		SERIAL 	NOT NULL,
+<<<<<<< HEAD
+    date_of_issue	DATE 	NOT NULL,
+=======
     date_of_issue	DATE    NOT NULL,
+>>>>>>> dab50959475c3e19863ad41fa7094a8aab6346ff
 
     PRIMARY KEY (issue_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
@@ -134,11 +136,13 @@ CREATE TABLE logs.analysis_prescription (
 );
 
 CREATE TABLE logs.analyzes_undergone (
+    survey_id		SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     analysis_id		SERIAL 	NOT NULL,
     date_of_issue	DATE,
     results		TEXT,
-    
+
+    PRIMARY KEY	(survey_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
     FOREIGN KEY (analysis_id) REFERENCES logs.analyzes (analysis_id)
 );
@@ -177,4 +181,3 @@ CREATE TABLE logs.surgeries_undergone (
     FOREIGN KEY (surgery_id) REFERENCES logs.surgeries (surgery_id),
     FOREIGN KEY (surgeon_id) REFERENCES logs.doctors (doctor_id)  
 );
-
