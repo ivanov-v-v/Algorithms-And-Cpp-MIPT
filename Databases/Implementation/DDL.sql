@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿--Schema: AnamnesisAutomated
-=======
--- Schema: AnamnesisAutomated
->>>>>>> dab50959475c3e19863ad41fa7094a8aab6346ff
+--Schema: AnamnesisAutomated
 
 DROP SCHEMA IF EXISTS logs CASCADE;
 
