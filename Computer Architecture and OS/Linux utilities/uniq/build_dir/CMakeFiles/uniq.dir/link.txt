@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/uniq.dir/main.cpp.o  -o uniq 

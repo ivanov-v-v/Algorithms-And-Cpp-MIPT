@@ -1,15 +1,14 @@
 /* TODO: 
-* 1. Add support of command line options (in particular, verbose-mode);
-* 2. Write unit tests;
-* 3.* How to implement own class of strings in such a manner,
-*     that it would be able to use them interchangeably whith c_strings?
-* 4.* Implement recursive copy-and-removal to handle EXTDEV in dir-to-dir copying;
-* 5. Get rid of magical constants.
+* 1. get_current_dir_name(), unlink_cb(), fcloseall() are all GNU-dependent,
+     hence current code version is not portable
 */
+
+ #define _XOPEN_SOURCE 500 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <getopt.h>
 #include <sys/types.h>
@@ -20,13 +19,12 @@
 #include <errno.h>
 #include <ftw.h>
 
-#define BUFFSIZE 1024 * sizeof(char)
-
 // removes the file pointed by fpath during recursive pre-order traversal of given directory
 static int unlink_cb(const char *fpath, const struct stat *statbuf, int typeflag, struct FTW *ftwbuf);
 static int remove_recursively(char *path);
 static void copy_and_remove(char* srcpath, char* destpath);
 
+static void write_formatted_message_to_string(char** message, const char* format, ...);
 static void print_message_and_exit(char* message);
 static void print_error_and_exit();
 
@@ -54,14 +52,14 @@ static void perform_move(char* srcpath, char* destpath);
 
 // current version doesn't support command line options
 int main(int argc, char** argv) {
-    char* err_message = (char*)malloc(BUFFSIZE); // provides support of formatted output in error log
+    char* err_message = NULL;  // provides support of formatted output in error log
     /* TODO:
     *  Transform arguments into their real paths
     *  And process them taking into consideration their longest common prefix.
     */
     if (argc < 3) {
         // at least three arguments must be provided: what and where to move;
-        snprintf(err_message, BUFFSIZE, "too few arguments: %d found, at least 3 expected", argc - 1);
+        write_formatted_message_to_string(&err_message, "too few arguments: %d found, at least 3 expected", argc - 1);
         print_message_and_exit(err_message);
     }
 
@@ -69,76 +67,83 @@ int main(int argc, char** argv) {
 
     char** absolute_paths = (char**)malloc(argc * sizeof(char*));
     for (int i = 1; i < argc; ++i) {
-        absolute_paths[i] = (char*)malloc(BUFFSIZE);
-        char* parent_dir_path = (char*)malloc(BUFFSIZE);
+        absolute_paths[i] = NULL;
+        char* parent_dir_path = NULL;
         char* ptr_to_last_slash = strrchr(argv[i], '/');
         if (ptr_to_last_slash == NULL) {
-            getcwd(parent_dir_path, BUFFSIZE);
+            parent_dir_path = get_current_dir_name();
         } else {
+            parent_dir_path = (char*)malloc((ptr_to_last_slash - argv[i] + 1) * sizeof(char));
             strncpy(parent_dir_path, argv[i], ptr_to_last_slash - argv[i]);
         }
-        if (!realpath(parent_dir_path, absolute_paths[i])) {
-            snprintf(err_message, BUFFSIZE, "\'%s\': invalid path", argv[i]);
+        absolute_paths[i] = realpath(parent_dir_path, NULL);
+        if (!absolute_paths[i]) {
+            write_formatted_message_to_string(&err_message, "\'%s\': invalid path", argv[i]);
             print_message_and_exit(err_message);
         }
         if (ptr_to_last_slash != NULL) {
+            absolute_paths[i] = (char*)realloc(absolute_paths[i], sizeof(char) * (strlen(absolute_paths[i]) + strlen(ptr_to_last_slash) + 1));
             strcat(absolute_paths[i], ptr_to_last_slash);
         } else {
             // to be refactored
+            absolute_paths[i] = (char*)realloc(absolute_paths[i], sizeof(char) * (strlen(absolute_paths[i]) + 1 +  strlen(argv[i]) + 1));
             strcat(absolute_paths[i], "/");
             strcat(absolute_paths[i], argv[i]);
         }
         printf("%d: %s\n", i, absolute_paths[i]);
         free(parent_dir_path);
     }
-
     if (stat(absolute_paths[argc - 1], &statbuf)) { // destination path is non-existent
+        puts("HERE");
         if (argc != 3) {
-            snprintf(err_message, BUFFSIZE, "\'%s\': destination path is not a directory", argv[argc - 1]);
+            write_formatted_message_to_string(&err_message, "\'%s\': destination path is not a directory", argv[argc - 1]);
             print_message_and_exit(err_message);
         }
         if (stat(absolute_paths[1], &statbuf)) { // check existense of the source file;
-            snprintf(err_message, BUFFSIZE, "\'%s\': not a file or a directory", argv[1]);
+            write_formatted_message_to_string(&err_message, "\'%s\': not a file or a directory", argv[1]);
             print_message_and_exit(err_message);
         }
         perform_move(absolute_paths[1], absolute_paths[2]);
     } else {
         if (S_ISREG(statbuf.st_mode)) { // file-to-file, w/o options;
             if (argc != 3) {
-                snprintf(err_message, BUFFSIZE, "\'%s\': destination path is not a directory", argv[argc - 1]);
+                write_formatted_message_to_string(&err_message, "\'%s\': destination path is not a directory", argv[argc - 1]);
                 print_message_and_exit(err_message);
             }
             if (stat(absolute_paths[1], &statbuf)) { // check existense of the source file;
-                snprintf(err_message, BUFFSIZE, "\'%s\': not a file or directory", argv[1]);
+                write_formatted_message_to_string(&err_message, "\'%s\': not a file or directory", argv[1]);
                 print_message_and_exit(err_message);
             }
             if (!S_ISREG(statbuf.st_mode)) { // only files can be moved into files;
-                snprintf(err_message, BUFFSIZE, "\'%s\': cannot overwrite destination directory", argv[1]);
+                write_formatted_message_to_string(&err_message, "\'%s\': cannot overwrite destination directory", argv[1]);
                 print_message_and_exit(err_message);
             }
             if (!strcmp(absolute_paths[1], absolute_paths[2])) {
-                snprintf(err_message, BUFFSIZE, "\'%s\' and \'%s\' are the same file", absolute_paths[1], absolute_paths[1]);
+                write_formatted_message_to_string(&err_message, "\'%s\' and \'%s\' are the same file", absolute_paths[1], absolute_paths[1]);
                 print_message_and_exit(err_message);
             }
             remove(absolute_paths[2]);
             perform_move(absolute_paths[1], absolute_paths[2]);
         } else { // destination path specifies a directory
             char* destdir = absolute_paths[argc - 1];         // dir to move into
-            char* destpath = (char*)malloc(BUFFSIZE);   // new path for source file/directory
+            char* destpath = NULL;   // new path for source file/directory
             for (int i = 1; i < argc - 1; ++i) {
                 char* srcpath = absolute_paths[i]; // what to move
                 if (stat(srcpath, &statbuf)) {
-                    char* err_message = (char*)malloc(BUFFSIZE);
-                    snprintf(err_message, BUFFSIZE, "%s: not a file or directory", srcpath);
+                    write_formatted_message_to_string(&err_message, "%s: not a file or directory", srcpath);
                     print_message_and_exit(err_message);
                 }
                 int lcp_len = longest_common_prefix_length(srcpath, destdir);
                 if (lcp_len == strlen(srcpath)) {
-                    snprintf(err_message, BUFFSIZE, "cannot move \'%s\' to a subdirectory of itself", absolute_paths[i]);
+                    write_formatted_message_to_string(&err_message, "cannot move \'%s\' to a subdirectory of itself", absolute_paths[i]);
                     print_message_and_exit(err_message);
                 }
-                char* name = strrchr(srcpath, '/') + 1;
-                snprintf(destpath, BUFFSIZE, "%s/%s", destdir, name);
+                if (srcpath[strlen(srcpath) - 1] == '/') {
+                    srcpath[strlen(srcpath) - 1] = '\0';
+                }
+                char* name_ptr = strrchr(srcpath, '/') + 1;
+                write_formatted_message_to_string(&destpath, "%s/%s", destdir, name_ptr);
+                printf("—----->%s\n", destpath);
                 if (!stat(destpath, &statbuf)) {    // if destpath is occupied
                     if (S_ISREG(statbuf.st_mode)) { // with a file, 
                         remove(destpath); // remove it;
@@ -190,6 +195,19 @@ static void copy_and_remove(char* srcpath, char* destpath) {
     remove(srcpath);
 }
 
+static void write_formatted_message_to_string(char** buffer, const char* format, ...) {
+    free(*buffer);
+    va_list args, dup_args;
+    va_copy(dup_args, args);
+    va_start (args, format);
+    int len = vsnprintf(NULL, 0, format, args) + 1;
+    va_end(args);
+    va_start(dup_args, format);
+    *buffer = (char*)calloc(len * 2, sizeof(char));
+    vsnprintf(*buffer, len * 2, format, dup_args);
+    va_end(dup_args);
+}
+
 static void print_message_and_exit(char* message) {
     printf("mv: %s\n", message);
     exit(EXIT_FAILURE);
@@ -224,8 +242,8 @@ static void perform_move(char* srcpath, char* destpath) {
                 // copy recursively (not implemented yet: 
                 // calls cp utility usng system() command),
                 // to be rewritten
-                char* cmd = (char*)malloc((2 * BUFFSIZE + 5) * sizeof(char));
-                snprintf(cmd, sizeof(cmd), "cp %s %s", srcpath, destpath);
+                char* cmd = NULL; 
+                write_formatted_message_to_string(&cmd, "cp %s %s", srcpath, destpath);
                 system(cmd);
                 free(cmd);
                 remove_recursively(srcpath);
@@ -233,7 +251,7 @@ static void perform_move(char* srcpath, char* destpath) {
                 print_error_and_exit();
             }
         } else { // handling other types of errors is currently not supported
-            printf("%s %s\n", srcpath, destpath);
+            printf("Error occured: %s %s\n", srcpath, destpath);
             print_error_and_exit();
         }
     }
