@@ -1,4 +1,4 @@
---Schema: AnamnesisAutomated
+﻿--Schema: AnamnesisAutomated
 
 DROP SCHEMA IF EXISTS logs CASCADE;
 
@@ -22,6 +22,8 @@ CREATE TABLE logs.patients (
     PRIMARY KEY (patient_id)
 );
 
+CREATE INDEX pname_idx ON logs.patients (full_name);
+
 CREATE TABLE logs.drug_sensitivity (
     reaction_id		SERIAL 	NOT NULL,
     patient_id		SERIAL 	NOT NULL,
@@ -43,6 +45,9 @@ CREATE TABLE logs.doctors (
 
     PRIMARY KEY (doctor_id)
 );
+
+CREATE INDEX dname_idx ON logs.doctors (full_name);
+CREATE INDEX dspec_idx ON logs.doctors (specialization);
 
 CREATE TABLE logs.doctor_sessions (
     session_id		SERIAL 	NOT NULL,
@@ -70,6 +75,8 @@ CREATE TABLE logs.medical_log (
     FOREIGN KEY (therapist_id) REFERENCES logs.doctors (doctor_id)
 );
 
+CREATE INDEX diagnosis_idx ON logs.medical_log (diagnosis);
+
 CREATE TABLE logs.conditions (
     case_id		SERIAL 	NOT NULL,
     description		TEXT 	NOT NULL,
@@ -77,6 +84,8 @@ CREATE TABLE logs.conditions (
     
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id)
 );
+
+CREATE INDEX condition_idx ON logs.conditions (description);
 
 CREATE TABLE logs.drugs (
     drug_id		SERIAL 	NOT NULL,
@@ -105,11 +114,7 @@ CREATE TABLE logs.drugs_received (
     issue_id		SERIAL	NOT NULL,
     case_id		SERIAL 	NOT NULL,
     drug_id		SERIAL 	NOT NULL,
-<<<<<<< HEAD
     date_of_issue	DATE 	NOT NULL,
-=======
-    date_of_issue	DATE    NOT NULL,
->>>>>>> dab50959475c3e19863ad41fa7094a8aab6346ff
 
     PRIMARY KEY (issue_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
