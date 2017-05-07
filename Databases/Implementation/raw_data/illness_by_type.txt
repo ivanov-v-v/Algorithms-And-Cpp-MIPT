@@ -1,0 +1,38 @@
+Othorhinolaryngology:
+Sinusitus
+Rhinitis
+Laryngitis
+Nasal polyp
+
+Cardiology:
+Atherosclerosis
+Coronary artery disease
+Cardiac arrest
+Cardiomyopathy
+Heart failure
+
+Oncology:
+Lung cancer
+Stomach cancer
+Brain cancer
+Bone cancer
+Liver cancer
+Blood cancer
+Lymphoma
+
+Urology:
+Bladder stones
+Cystitis
+Urolithiasis
+Nephrosis
+
+Endocrinology:
+Diabetes
+Hypoglicemia
+Osteoporosis
+
+Psychiatry:
+Alzheimer's disease
+Insomnia
+Schizophrenia
+Depression

@@ -37,7 +37,7 @@ CREATE TABLE logs.drug_sensitivity (
 CREATE TABLE logs.doctors (
     doctor_id		SERIAL 	NOT NULL,
     full_name		TEXT	NOT NULL,
-    degree		TEXT	NOT NULL,
+    degree		TEXT,
     specialization	TEXT 	NOT NULL,
     seniority		INT,
     position		TEXT,
