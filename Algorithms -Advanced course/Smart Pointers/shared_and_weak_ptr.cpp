@@ -168,11 +168,15 @@ public:
         _increment_counter();
     }
     WeakPtr& operator= (WeakPtr&& other) noexcept {
+        _decrement_counter();
+        _clean_up();
         swap(other);
         other._ptr = nullptr;
         other._cblock = nullptr;
     }
     WeakPtr& operator= (const SharedPtr<T>& sptr) noexcept {
+        _decrement_counter();
+        _clean_up();
         _ptr = sptr._ptr;
         _cblock = sptr._cblock;
         _increment_counter();
