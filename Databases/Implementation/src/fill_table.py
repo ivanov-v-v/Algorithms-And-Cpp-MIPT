@@ -13,24 +13,7 @@ import logging
 # 5. Добавить ограничения в DDL
 # 6. Лучше продумать структуру генерируемых данных
 
-if __name__ == '__main__':
-
-    conn = None
-    cursor = None
-    try:
-        conn = psycopg2.connect(
-            database='postgres',
-            user='postgres',
-            port='5432',
-            password='',
-            host='localhost'
-        )
-        cursor = conn.cursor()
-    except Exception as err:
-        if conn:
-            conn.rollback()
-        print(err)
-
+def run_script(conn, cursor):
     patients_df = pd.read_csv('../processed_data/patients.csv', sep='\t')
     patients = patients_df.to_records(index=False).tolist()
 
@@ -78,9 +61,35 @@ if __name__ == '__main__':
     # for row in rows:
     #     print(row)
 
+
+if __name__ == '__main__':
+
+    conn = None
+    cursor = None
+    try:
+        conn = psycopg2.connect(
+            database='postgres',
+            user='postgres',
+            port='5432',
+            password='',
+            host='localhost'
+        )
+        cursor = conn.cursor()
+    except Exception as err:
+        if conn:
+            conn.rollback()
+        print(err)
+        sys.exit()
+    finally:
+        if conn:
+            conn.close()
+
+    run_script(conn, cursor)
+
     cursor.execute("DELETE FROM logs.medical_log")
     cursor.execute("DELETE FROM logs.patients")
     cursor.execute("DELETE FROM logs.doctors")
     conn.commit()
+
     if conn:
         conn.close()

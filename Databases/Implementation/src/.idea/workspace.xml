@@ -14,6 +14,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/src$fill_table.coverage" NAME="fill_table Coverage Results" MODIFIED="1494212315386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/src$make_queries.coverage" NAME="make_queries Coverage Results" MODIFIED="1494217698815" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/src$generate_data.coverage" NAME="generate_data Coverage Results" MODIFIED="1494209462572" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -28,7 +29,7 @@
       <file leaf-file-name="generate_data.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/generate_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="106">
+            <state relative-caret-position="1118">
               <caret line="186" column="29" selection-start-line="186" selection-start-column="29" selection-end-line="186" selection-end-column="29" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
@@ -37,27 +38,35 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="fill_table.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="fill_table.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fill_table.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="378">
-              <caret line="21" column="32" selection-start-line="21" selection-start-column="32" selection-end-line="21" selection-end-column="32" />
+            <state relative-caret-position="630">
+              <caret line="56" column="17" selection-start-line="49" selection-start-column="4" selection-end-line="56" selection-end-column="17" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
-                <marker date="1494212344522" expanded="true" signature="976:1033" ph="INSERT INTO logs.patients... " />
-                <marker date="1494212344522" expanded="true" signature="976:1121" ph="INSERT INTO logs.patients... " />
-                <marker date="1494212344522" expanded="true" signature="976:1187" ph="INSERT INTO logs.patients... " />
-                <marker date="1494212344522" expanded="true" signature="1280:1307" ph="SELECT * FRO... patients" />
-                <marker date="1494212344522" expanded="true" signature="1538:1705" ph="INSERT INTO logs.doctors... " />
-                <marker date="1494212344522" expanded="true" signature="1796:1822" ph="SELECT * FRO... doctors" />
-                <marker date="1494212344522" expanded="true" signature="2045:2100" ph="INSERT INTO logs.medical_log... " />
-                <marker date="1494212344522" expanded="true" signature="2045:2253" ph="INSERT INTO logs.medical_log... " />
-                <marker date="1494212344522" expanded="true" signature="2045:2332" ph="INSERT INTO logs.medical_log... " />
-                <marker date="1494212344522" expanded="true" signature="2045:2385" ph="INSERT INTO logs.medical_log... " />
-                <marker date="1494212344522" expanded="true" signature="2470:2500" ph="SELECT * FRO... medical_log" />
-                <marker date="1494212344522" expanded="true" signature="2599:2627" ph="DELETE FROM " />
-                <marker date="1494212344522" expanded="true" signature="2650:2675" ph="DELETE FROM " />
-                <marker date="1494212344522" expanded="true" signature="2698:2722" ph="DELETE FROM " />
+                <element signature="e#912#959#0" expanded="false" />
+                <marker date="1494213653689" expanded="true" signature="626:837" ph="INSERT INTO logs.patients... " />
+                <marker date="1494213653689" expanded="true" signature="1188:1355" ph="INSERT INTO logs.doctors... " />
+                <marker date="1494213653689" expanded="true" signature="1695:2035" ph="INSERT INTO logs.medical_log... " />
+                <marker date="1494213653689" expanded="true" signature="2734:2762" ph="DELETE FROM " />
+                <marker date="1494213653689" expanded="true" signature="2785:2810" ph="DELETE FROM " />
+                <marker date="1494213653689" expanded="true" signature="2833:2857" ph="DELETE FROM " />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="make_queries.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/make_queries.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="110" column="24" selection-start-line="110" selection-start-column="24" selection-end-line="110" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#15#0" expanded="true" />
+                <marker date="1494219121663" expanded="true" signature="1245:1585" ph="INSERT INTO logs.medical_log... " />
+                <marker date="1494219121663" expanded="true" signature="1411:1464" ph="SELECT patie... patients" />
+                <marker date="1494219121663" expanded="true" signature="1492:1543" ph="SELECT docto... doctors" />
               </folding>
             </state>
           </provider>
@@ -70,6 +79,7 @@
       <list>
         <option value="$PROJECT_DIR$/generate_data.py" />
         <option value="$PROJECT_DIR$/fill_table.py" />
+        <option value="$PROJECT_DIR$/make_queries.py" />
       </list>
     </option>
   </component>
@@ -135,10 +145,10 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/fill_table.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/make_queries.py" />
     <property name="WebServerToolWindowFactoryState" value="false" />
   </component>
-  <component name="RunManager" selected="Python.fill_table">
+  <component name="RunManager" selected="Python.make_queries">
     <configuration default="true" type="DjangoTestsConfigurationType" factoryName="Django tests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -372,14 +382,33 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="src" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fill_table.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/make_queries.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <list size="2">
+    <configuration default="false" name="make_queries" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="src" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/make_queries.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Python.generate_data" />
       <item index="1" class="java.lang.String" itemvalue="Python.fill_table" />
+      <item index="2" class="java.lang.String" itemvalue="Python.make_queries" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
@@ -405,7 +434,7 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
@@ -455,7 +484,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/generate_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="106">
+        <state relative-caret-position="1118">
           <caret line="186" column="29" selection-start-line="186" selection-start-column="29" selection-end-line="186" selection-end-column="29" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
@@ -465,24 +494,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fill_table.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="378">
-          <caret line="21" column="32" selection-start-line="21" selection-start-column="32" selection-end-line="21" selection-end-column="32" />
+        <state relative-caret-position="630">
+          <caret line="56" column="17" selection-start-line="49" selection-start-column="4" selection-end-line="56" selection-end-column="17" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
-            <marker date="1494212344522" expanded="true" signature="976:1033" ph="INSERT INTO logs.patients... " />
-            <marker date="1494212344522" expanded="true" signature="976:1121" ph="INSERT INTO logs.patients... " />
-            <marker date="1494212344522" expanded="true" signature="976:1187" ph="INSERT INTO logs.patients... " />
-            <marker date="1494212344522" expanded="true" signature="1280:1307" ph="SELECT * FRO... patients" />
-            <marker date="1494212344522" expanded="true" signature="1538:1705" ph="INSERT INTO logs.doctors... " />
-            <marker date="1494212344522" expanded="true" signature="1796:1822" ph="SELECT * FRO... doctors" />
-            <marker date="1494212344522" expanded="true" signature="2045:2100" ph="INSERT INTO logs.medical_log... " />
-            <marker date="1494212344522" expanded="true" signature="2045:2253" ph="INSERT INTO logs.medical_log... " />
-            <marker date="1494212344522" expanded="true" signature="2045:2332" ph="INSERT INTO logs.medical_log... " />
-            <marker date="1494212344522" expanded="true" signature="2045:2385" ph="INSERT INTO logs.medical_log... " />
-            <marker date="1494212344522" expanded="true" signature="2470:2500" ph="SELECT * FRO... medical_log" />
-            <marker date="1494212344522" expanded="true" signature="2599:2627" ph="DELETE FROM " />
-            <marker date="1494212344522" expanded="true" signature="2650:2675" ph="DELETE FROM " />
-            <marker date="1494212344522" expanded="true" signature="2698:2722" ph="DELETE FROM " />
+            <element signature="e#912#959#0" expanded="false" />
+            <marker date="1494213653689" expanded="true" signature="626:837" ph="INSERT INTO logs.patients... " />
+            <marker date="1494213653689" expanded="true" signature="1188:1355" ph="INSERT INTO logs.doctors... " />
+            <marker date="1494213653689" expanded="true" signature="1695:2035" ph="INSERT INTO logs.medical_log... " />
+            <marker date="1494213653689" expanded="true" signature="2734:2762" ph="DELETE FROM " />
+            <marker date="1494213653689" expanded="true" signature="2785:2810" ph="DELETE FROM " />
+            <marker date="1494213653689" expanded="true" signature="2833:2857" ph="DELETE FROM " />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/make_queries.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="110" column="24" selection-start-line="110" selection-start-column="24" selection-end-line="110" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+            <marker date="1494219121663" expanded="true" signature="1245:1585" ph="INSERT INTO logs.medical_log... " />
+            <marker date="1494219121663" expanded="true" signature="1411:1464" ph="SELECT patie... patients" />
+            <marker date="1494219121663" expanded="true" signature="1492:1543" ph="SELECT docto... doctors" />
           </folding>
         </state>
       </provider>
