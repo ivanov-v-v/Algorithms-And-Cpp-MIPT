@@ -46,12 +46,20 @@ public:
     }
 
     SharedPtr& operator= (const SharedPtr& other) noexcept {
+        _decrement_counter();
+        if (_cblock && !use_count() && !_cblock->weak_count) {
+            _clean_up();
+        }
         _ptr = other._ptr;
         _cblock = other._cblock;
         _increment_counter();
         return *this;
     }
     SharedPtr& operator= (SharedPtr&& other) noexcept {
+        _decrement_counter();
+        if (_cblock && !use_count() && !_cblock->weak_count) {
+            _clean_up();
+        }
         swap(other);
         other._ptr = nullptr;
         other._cblock = nullptr;
