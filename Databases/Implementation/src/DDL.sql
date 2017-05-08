@@ -11,7 +11,7 @@ COMMENT ON SCHEMA logs
 CREATE TABLE logs.patients (
     patient_id		SERIAL	NOT NULL,
     full_name		TEXT 	NOT NULL,
-    sex			CHAR(1) CHECK(sex = 'M' OR sex = 'W'),
+    sex			CHAR(1) CHECK(sex = 'M' OR sex = 'F'),
     date_of_birth	DATE,
     ethnicity		TEXT,
     relationship_status	TEXT,
@@ -38,7 +38,7 @@ CREATE TABLE logs.doctors (
     doctor_id		SERIAL 	NOT NULL,
     full_name		TEXT	NOT NULL,
     degree		TEXT,
-    specialization	TEXT 	NOT NULL,
+    speciality		TEXT 	NOT NULL,
     seniority		INT,
     position		TEXT,
     salary 		NUMERIC	CHECK(salary > 0),
@@ -47,7 +47,7 @@ CREATE TABLE logs.doctors (
 );
 
 CREATE INDEX dname_idx ON logs.doctors (full_name);
-CREATE INDEX dspec_idx ON logs.doctors (specialization);
+CREATE INDEX dspec_idx ON logs.doctors (speciality);
 
 CREATE TABLE logs.doctor_sessions (
     session_id		SERIAL 	NOT NULL,

@@ -1,0 +1,17 @@
+DM:
+Head of the laboratory
+Doctor
+Surgeon
+
+PhD:
+Doctor
+Surgeon
+
+MSc:
+Assistant
+Therapist
+
+MBBS:
+Internist
+Nurse practitioner
+Technician
