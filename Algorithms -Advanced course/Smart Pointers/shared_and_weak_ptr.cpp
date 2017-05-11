@@ -46,12 +46,16 @@ public:
     }
 
     SharedPtr& operator= (const SharedPtr& other) noexcept {
+        _decrement_counter();
+        _clean_up();
         _ptr = other._ptr;
         _cblock = other._cblock;
         _increment_counter();
         return *this;
     }
     SharedPtr& operator= (SharedPtr&& other) noexcept {
+        _decrement_counter();
+        _clean_up();
         swap(other);
         other._ptr = nullptr;
         other._cblock = nullptr;
@@ -84,23 +88,19 @@ public:
 
     void reset (nullptr_t nptr) noexcept {
         _decrement_counter();
-        if (!use_count() && !_cblock->weak_count) {
-            // если это последний умный указатель,
-            // ссылавшийся на данный объект,
-            // то удалить сам объект и управляющий им блок
-            _clean_up();
-        }
+        // если это последний умный указатель,
+        // ссылавшийся на данный объект,
+        // то удалить сам объект и управляющий им блок
+        _clean_up();
         _ptr = nullptr;
     }
     void reset (ptr_t newPtr = ptr_t()) noexcept {
         if (_ptr != newPtr) {
             _decrement_counter();
-            if (!use_count() && !_cblock->weak_count) {
-                // если это последний умный указатель,
-                // ссылавшийся на данный объект,
-                // то удалить сам объект и управляющий им блок
-                _clean_up();
-            }
+            // если это последний умный указатель,
+            // ссылавшийся на данный объект,
+            // то удалить сам объект и управляющий им блок
+            _clean_up();
             _ptr = newPtr;
             _cblock = new ControlBlock();
             _increment_counter();
@@ -168,11 +168,15 @@ public:
         _increment_counter();
     }
     WeakPtr& operator= (WeakPtr&& other) noexcept {
+        _decrement_counter();
+        _clean_up();
         swap(other);
         other._ptr = nullptr;
         other._cblock = nullptr;
     }
     WeakPtr& operator= (const SharedPtr<T>& sptr) noexcept {
+        _decrement_counter();
+        _clean_up();
         _ptr = sptr._ptr;
         _cblock = sptr._cblock;
         _increment_counter();
