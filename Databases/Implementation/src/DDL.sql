@@ -1,5 +1,3 @@
-﻿--Schema: AnamnesisAutomated
-
 DROP SCHEMA IF EXISTS logs CASCADE;
 
 CREATE SCHEMA logs

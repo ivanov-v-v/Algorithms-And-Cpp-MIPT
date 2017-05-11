@@ -13,6 +13,7 @@ import logging
 # 5. Добавить ограничения в DDL
 # 6. Лучше продумать структуру генерируемых данных
 
+
 def run_script(conn, cursor):
     patients_df = pd.read_csv('../processed_data/patients.csv', sep='\t')
     patients = patients_df.to_records(index=False).tolist()
@@ -80,15 +81,12 @@ if __name__ == '__main__':
             conn.rollback()
         print(err)
         sys.exit()
-    finally:
-        if conn:
-            conn.close()
 
     run_script(conn, cursor)
 
-    cursor.execute("DELETE FROM logs.medical_log")
-    cursor.execute("DELETE FROM logs.patients")
-    cursor.execute("DELETE FROM logs.doctors")
+    # cursor.execute("DELETE FROM logs.medical_log")
+    # cursor.execute("DELETE FROM logs.patients")
+    # cursor.execute("DELETE FROM logs.doctors")
     conn.commit()
 
     if conn:
