@@ -1,0 +1,42 @@
+Othorhinolaryngology:
+Cough
+Fever
+Snuffle
+Nasal congestion
+
+Cardiology:
+Tachycardia
+Chest pain
+Wheeze
+Arrhythmia
+Hypertension
+Hypotension
+
+Oncology:
+Pain syndrome
+Depletion
+Apathy
+Spontaneous weight loss
+Headache
+Bloody excreta
+
+Urology:
+Blood in urine
+Pain syndrome
+Frequent urination
+Painful urination
+
+Endocrinology:
+High blood sugar level
+Goiter
+Chronic fatigue
+Developmental delays
+Frequent allergies
+
+Psychiatry:
+Dementia
+Aggressive behaviour
+Memory loss
+Motor disorders
+Mental retardation
+Personality dissociation

@@ -1,0 +1,40 @@
+Othorhinolaryngology:
+Adenoidoectomy
+Tonsillectomy
+Septoplasty
+Sinus surgery
+Functional endoscopic sinus
+Direc Laryngoscopy
+
+Cardiology:
+Angioplasty
+Atherectomy
+Cardiomyoplasty
+Heart Transplant
+Stent Placement
+Glenn procedure
+Valve repair
+Heart transplantation
+Artificial heart valve
+
+Oncology:
+Tumor removal
+Chemotherapy
+Radiation therapy
+Biopsy
+Debulking
+
+Urology:
+Lithotomy
+Urethroplasty
+Ureterolysis
+Cysectomy
+Kidney transplantation
+
+Endocrinology:
+Thyroid surgery
+Adrenal surgery
+
+Psychiatry:
+Lobotomy
+

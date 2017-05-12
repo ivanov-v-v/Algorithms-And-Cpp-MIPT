@@ -27,7 +27,7 @@ class Patient:
 class Doctor:
     def __init__(self, doctor_name, degree, speciality,
                  seniority, position, salary):
-        self.doctor_name = doctor_name
+        self.doctor_name = doctor_rname
         self.degree = degree
         self.speciality = speciality
         self.seniority = seniority
@@ -90,6 +90,9 @@ def upload_raw_data():
                 diseases[d_type] = []
             else:
                 diseases[d_type].append(line)
+
+def generate_drugs():
+    return 0
 
 
 def generate_patients():
@@ -203,6 +206,7 @@ def generate_logs():
                 sick_leaves[patient.patient_name].append((entry_date, discharge_date))
             else:
                 sick_leaves.update({patient.patient_name: (entry_date, discharge_date)})
+
 
 
 if __name__ == '__main__':

@@ -3,11 +3,9 @@ import pandas as pd
 import sys
 import logging
 
-# хорошая новость: с точки зрения реализации psycopg2
-# эквивалентен обычным sql-запросам
 # План:
 # 1. Сгенерировать все .csv с данными
-# 2. Собрать из него pandas.DataFrame
+# 2. Собрать из них pandas.DataFrame
 # 3. Датафреймы преобразовать в списки кортежей и загрузить в базу
 # 4. Разобраться с назначением ролей пользователям
 # 5. Добавить ограничения в DDL
@@ -25,11 +23,6 @@ def run_script(conn, cursor):
     cursor.executemany(patients_query, patients)
     conn.commit()
 
-    # cursor.execute("SELECT * FROM logs.patients")
-    # rows = cursor.fetchall()
-    # for row in rows:
-    #     print(row)
-
     doctors_df = pd.read_csv('../processed_data/doctors.csv', sep='\t')
     doctors = doctors_df.to_records(index=False).tolist()
 
@@ -39,11 +32,6 @@ def run_script(conn, cursor):
 
     cursor.executemany(doctors_query, doctors)
     conn.commit()
-
-    # cursor.execute("SELECT * FROM logs.doctors")
-    # rows = cursor.fetchall()
-    # for row in rows:
-    #     print(row)
 
     logs_df = pd.read_csv('../processed_data/medical_log.csv', sep='\t')
     logs = logs_df.to_records(index=False).tolist()
@@ -56,12 +44,6 @@ def run_script(conn, cursor):
 
     cursor.executemany(logs_query, logs)
     conn.commit()
-
-    # cursor.execute("SELECT * FROM logs.medical_log")
-    # rows = cursor.fetchall()
-    # for row in rows:
-    #     print(row)
-
 
 if __name__ == '__main__':
 
