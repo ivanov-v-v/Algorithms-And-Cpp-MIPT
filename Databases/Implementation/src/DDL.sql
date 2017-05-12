@@ -8,7 +8,7 @@ COMMENT ON SCHEMA logs
 
 CREATE TABLE logs.patients (
     patient_id		SERIAL	NOT NULL,
-    full_name		TEXT 	NOT NULL,
+    patient_name		TEXT 	NOT NULL,
     sex			CHAR(1) CHECK(sex = 'M' OR sex = 'F'),
     date_of_birth	DATE,
     ethnicity		TEXT,
@@ -20,7 +20,7 @@ CREATE TABLE logs.patients (
     PRIMARY KEY (patient_id)
 );
 
-CREATE INDEX pname_idx ON logs.patients (full_name);
+CREATE INDEX pname_idx ON logs.patients (patient_name);
 
 CREATE TABLE logs.drug_sensitivity (
     reaction_id		SERIAL 	NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE logs.drug_sensitivity (
 
 CREATE TABLE logs.doctors (
     doctor_id		SERIAL 	NOT NULL,
-    full_name		TEXT	NOT NULL,
+    doctor_name		TEXT	NOT NULL,
     degree		TEXT,
     speciality		TEXT 	NOT NULL,
     seniority		INT,
@@ -44,7 +44,7 @@ CREATE TABLE logs.doctors (
     PRIMARY KEY (doctor_id)
 );
 
-CREATE INDEX dname_idx ON logs.doctors (full_name);
+CREATE INDEX dname_idx ON logs.doctors (doctor_name);
 CREATE INDEX dspec_idx ON logs.doctors (speciality);
 
 CREATE TABLE logs.doctor_sessions (
@@ -62,7 +62,7 @@ CREATE TABLE logs.doctor_sessions (
 CREATE TABLE logs.medical_log (
     case_id		SERIAL 	NOT NULL,
     patient_id		SERIAL 	NOT NULL,
-    therapist_id	SERIAL 	NOT NULL,
+    doctor_id	SERIAL 	NOT NULL,
     entry_date		DATE,
     diagnosis		TEXT,
     treatment_result	TEXT,
@@ -70,7 +70,7 @@ CREATE TABLE logs.medical_log (
 
     PRIMARY KEY (case_id),
     FOREIGN KEY (patient_id) REFERENCES logs.patients (patient_id),
-    FOREIGN KEY (therapist_id) REFERENCES logs.doctors (doctor_id)
+    FOREIGN KEY (doctor_id) REFERENCES logs.doctors (doctor_id)
 );
 
 CREATE INDEX diagnosis_idx ON logs.medical_log (diagnosis);

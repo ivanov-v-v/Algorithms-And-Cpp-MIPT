@@ -10,10 +10,10 @@ DOCTORS_CNT = 100
 
 
 class Patient:
-    def __init__(self, full_name, sex, date_of_birth,
+    def __init__(self, patient_name, sex, date_of_birth,
                  ethnicity, relationship_status, address,
                  phone_number, email, diagnosis_t):
-        self.full_name = full_name
+        self.patient_name = patient_name
         self.sex = sex
         self.date_of_birth = date_of_birth
         self.ethnicity = ethnicity
@@ -25,9 +25,9 @@ class Patient:
 
 
 class Doctor:
-    def __init__(self, full_name, degree, speciality,
+    def __init__(self, doctor_name, degree, speciality,
                  seniority, position, salary):
-        self.full_name = full_name
+        self.doctor_name = doctor_name
         self.degree = degree
         self.speciality = speciality
         self.seniority = seniority
@@ -100,28 +100,28 @@ def generate_patients():
             quotechar='"',
             quoting=csv.QUOTE_MINIMAL
         )
-        filewriter.writerow(['full_name', 'sex', 'date_of_birth', 'ethnicity',
+        filewriter.writerow(['patient_name', 'sex', 'date_of_birth', 'ethnicity',
                              'relationship_status', 'address', 'phone_number', 'email'])
         for it in range(PATIENTS_CNT):
             sex = 'M' if randint(1, 10**9 + 1) % 2 else 'F'
             name = random.choice(male_names if sex == 'M' else female_names)
             surname = random.choice(surnames)
-            full_name = '{} {}'.format(name, surname)
+            patient_name = '{} {}'.format(name, surname)
             date_of_birth = datetime.date(1950 + randint(0, 55), randint(1, 12), randint(1, 28))
             ethnicity = random.choice(ethnicities)
             relationship_status = random.choice(rel_statuses)
             address = '{} str. {}'.format(random.choice(surnames), randint(1, 1000))
             phone_number = '{}'.format(''.join(random.choice(string.digits) for _ in range(11)))
-            email = '{}@gmail.com'.format(''.join(full_name.split()))
+            email = '{}@gmail.com'.format(''.join(patient_name.split()))
             for obj in patients:
-                if obj.full_name == full_name:
+                if obj.patient_name == patient_name:
                     it -= 1
                     continue
-            filewriter.writerow([full_name, sex, date_of_birth, ethnicity, relationship_status, address, phone_number, email])
+            filewriter.writerow([patient_name, sex, date_of_birth, ethnicity, relationship_status, address, phone_number, email])
             diagnosis_t = random.choice(specialities)
             patients.append(
                 Patient(
-                    full_name, sex, date_of_birth,
+                    patient_name, sex, date_of_birth,
                     ethnicity, relationship_status,
                     address, phone_number, email, diagnosis_t
                 )
@@ -152,25 +152,25 @@ def generate_doctors():
             quotechar='"',
             quoting=csv.QUOTE_MINIMAL
         )
-        filewriter.writerow(['full_name', 'degree', 'specialization', 'seniority', 'position', 'salary'])
+        filewriter.writerow(['doctor_name', 'degree', 'specialization', 'seniority', 'position', 'salary'])
         for it in range(DOCTORS_CNT):
             sex = 'M' if randint(1, 10**9 + 1) % 2 else 'F'
             name = random.choice(male_names if sex == 'M' else female_names)
             surname = random.choice(surnames)
-            full_name = '{} {}'.format(name, surname)
+            doctor_name = '{} {}'.format(name, surname)
             degree = random.choice(degrees)
             speciality = random.choice(specialities)
             seniority = get_rand_seniority(degree)
             position = random.choice(positions[degree])
             salary = get_rand_salary(degree)
             for obj in doctors:
-                if obj.full_name == full_name:
+                if obj.doctor_name == doctor_name:
                     it -= 1
                     continue
-            filewriter.writerow([full_name, degree, speciality, seniority, position, salary])
+            filewriter.writerow([doctor_name, degree, speciality, seniority, position, salary])
             doctors.append(
                 Doctor(
-                    full_name, degree, speciality,
+                    doctor_name, degree, speciality,
                     seniority, position, salary
                 )
             )
@@ -184,7 +184,7 @@ def generate_logs():
             quotechar='"',
             quoting=csv.QUOTE_MINIMAL
         )
-        filewriter.writerow(['patient_name', 'therapist_name',
+        filewriter.writerow(['patient_name', 'doctor_name',
                              'entry_date', 'diagnosis', 'treatment_result',
                              'discharge_date'])
         for it in range(PATIENTS_CNT):
@@ -196,13 +196,13 @@ def generate_logs():
             discharge_date = datetime.datetime.now().date() - datetime.timedelta(days=randint(10, 100))
             treatment_result = 'Died' if randint(1, 10**9) < 25865000 else 'Cured'
             filewriter.writerow(
-                [patient.full_name, therapist.full_name,
+                [patient.patient_name, therapist.doctor_name,
                  entry_date, diagnosis, treatment_result, discharge_date]
             )
-            if patient.full_name in sick_leaves.keys():
-                sick_leaves[patient.full_name].append((entry_date, discharge_date))
+            if patient.patient_name in sick_leaves.keys():
+                sick_leaves[patient.patient_name].append((entry_date, discharge_date))
             else:
-                sick_leaves.update({patient.full_name: (entry_date, discharge_date)})
+                sick_leaves.update({patient.patient_name: (entry_date, discharge_date)})
 
 
 if __name__ == '__main__':

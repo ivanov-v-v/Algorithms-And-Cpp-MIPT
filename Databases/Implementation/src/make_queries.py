@@ -5,16 +5,26 @@ import datetime
 import sys
 import os
 import functools
+import re
 import logging
 
+
 # TODO: Реализовать основные юзер сторис. Проблема: они недостаточно продуманы.
-# В данный момент я не знаю, что именно реализовывать.
-# Пользователи не должны напрямую взаимодействовать с SQL-запросами.
-# 1. Добавить запись в больничный журнал
-# 2. Создать анкету пациента
-# 3. Показать, на основе имени, всю информацию, связанную с пациентом
-# 4. Добавление сотрудников
-# 5. Добавление лекарств и данных об индивидуальной чувствительности
+'''
+1. Добавить запись в больничный журнал
+2. Создать анкету пациента
+3. Показать, на основе имени, всю информацию, связанную с пациентом
+4. Добавление сотрудников
+5. Добавление лекарств и данных об индивидуальной чувствительности
+6. Удаление записей
+7. На роль фармацевта придётся забить
+8. На инспектора тоже придётся забить
+   (т.к. нужны данные по анализам, лекарствам, их назначениям,
+   и, что самое неприятное, их сопоставлению с списком показаний)
+9. Можно реализовать исследователя, т.к. генерацию выборки можно производить
+   средствами SQL, а дальше — анализировать с помощью pandas, т.к. там интуитивно
+   понятный API
+'''
 
 
 conn = None
@@ -414,15 +424,17 @@ def update_doctor_profile(doctor_id):
 
 
 @exception_handler(logger)
-def pretty_query_print(query, parameters_list):
+def pretty_query_print(query, parameters_list, column_names=None):
     try:
         cursor.execute(query, parameters_list)
     except Exception as err:
         raise
     else:
         data = cursor.fetchall()
-        colnames = [desc[0] for desc in cursor.description]
-        df = pd.DataFrame(data, columns=colnames)
+        all_cols = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(data, columns=all_cols)
+        if column_names:
+            df = df[column_names]
         print(df.to_string(), end='\n\n')
 
 
@@ -476,6 +488,46 @@ def show_table(table_name):
         )
     except:
         raise
+
+
+@exception_handler(logger)
+def get_sample_by_constraints(**kwargs):
+    # TODO: пока не поздно, переименовать названия полей в таблицах patient и doctor
+    target_diagnosis = kwargs['diagnosis'] if 'diagnosis' in kwargs.keys() else None
+    target_sex = kwargs['sex'] if 'sex' in kwargs.keys() else None
+    target_ethnicity = kwargs['ethnicity'] if 'ethnicity' in kwargs.keys() else None
+    target_since = kwargs['t_since'] if 't_since' in kwargs.keys() else datetime.datetime(1000, 1, 1)
+    target_until = kwargs['t_until'] if 't_until' in kwargs.keys() else datetime.datetime(3000, 1, 1)
+    target_therapist = kwargs['therapist'] if 'therapist' in kwargs.keys() else None
+    target_patient = kwargs['patient'] if 'patient' in kwargs.keys() else None
+    target_result = kwargs['result'] if 'result' in kwargs.keys() else None
+    target_age = kwargs['age'] if 'age' in kwargs.keys() else None
+    target_position = kwargs['position'] if 'position' in kwargs.keys() else None
+    target_columns = kwargs['columns_to_show'] if 'columns_to_show' in kwargs.keys() else None
+
+    # TODO: написать функцию, которая займётся подстановкой автоматически
+    raw_query = str(cursor.mogrify(
+        "SELECT * "
+        "FROM (logs.patients NATURAL JOIN logs.medical_log NATURAL JOIN logs.doctors) "
+        "WHERE diagnosis=%s "
+        "AND sex=%s "
+        "AND ethnicity=%s "
+        "AND patient_id=%s "
+        "AND doctor_id=%s "
+        "AND position=%s "
+        "AND treatment_result=%s "
+        "AND entry_date BETWEEN %s AND %s",
+        [target_diagnosis, target_sex, target_ethnicity,
+         target_patient, target_therapist, target_position,
+         target_result, target_since, target_until]
+    ))[2:-1]
+
+    query = re.sub("=NULL", " IS NOT NULL", raw_query)
+    try:
+        pretty_query_print(query, (None,), column_names=target_columns)
+    except:
+        raise
+
 
 if __name__ == '__main__':
     conn = None
@@ -580,6 +632,23 @@ if __name__ == '__main__':
                 show_table(table_name)
             except:
                 print("No such table")
+        elif command == '/get_sample':
+            # TODO: научиться считывать поля с экрана
+            print("Input all desired arguments. Format: arg_name=arg_val:\n"
+                  "Possible parameters: diagnosis, sex, ethnicity, t_since, "
+                  "t_until, therapist, patient, result, age, position, columns_to_show")
+            constraints = {}
+            while True:
+                line = input().strip()
+                if not line:
+                    break
+                words = line.split('=')
+                if words[0] == 'columns_to_show':
+                    col_names = re.split('; |, |\*|\n', words[1])
+                    constraints['columns_to_show'] = col_names
+                else:
+                    constraints[words[0]] = words[1]
+            get_sample_by_constraints(**constraints)
         elif command == '/drop_table':
             # TODO: добавить пользователей и сделать им разделение прав
             try:

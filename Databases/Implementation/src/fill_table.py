@@ -18,7 +18,7 @@ def run_script(conn, cursor):
     patients_df = pd.read_csv('../processed_data/patients.csv', sep='\t')
     patients = patients_df.to_records(index=False).tolist()
 
-    patients_query = "INSERT INTO logs.patients (full_name, sex, date_of_birth, " \
+    patients_query = "INSERT INTO logs.patients (patient_name, sex, date_of_birth, " \
                      "ethnicity, relationship_status, address, phone_number, email) " \
                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
@@ -33,7 +33,7 @@ def run_script(conn, cursor):
     doctors_df = pd.read_csv('../processed_data/doctors.csv', sep='\t')
     doctors = doctors_df.to_records(index=False).tolist()
 
-    doctors_query = "INSERT INTO logs.doctors (full_name, degree, " \
+    doctors_query = "INSERT INTO logs.doctors (doctor_name, degree, " \
                     "speciality, seniority, position, salary) " \
                     "VALUES (%s, %s, %s, %s, %s, %s)"
 
@@ -48,10 +48,10 @@ def run_script(conn, cursor):
     logs_df = pd.read_csv('../processed_data/medical_log.csv', sep='\t')
     logs = logs_df.to_records(index=False).tolist()
 
-    logs_query = "INSERT INTO logs.medical_log (patient_id, therapist_id, " \
+    logs_query = "INSERT INTO logs.medical_log (patient_id, doctor_id, " \
                  "entry_date, diagnosis, treatment_result, discharge_date)" \
-                 " VALUES ((SELECT patient_id FROM logs.patients WHERE full_name=%s), " \
-                 "(SELECT doctor_id FROM logs.doctors WHERE full_name=%s), " \
+                 " VALUES ((SELECT patient_id FROM logs.patients WHERE patient_name=%s), " \
+                 "(SELECT doctor_id FROM logs.doctors WHERE doctor_name=%s), " \
                  "%s, %s, %s, %s)"
 
     cursor.executemany(logs_query, logs)
@@ -84,9 +84,6 @@ if __name__ == '__main__':
 
     run_script(conn, cursor)
 
-    # cursor.execute("DELETE FROM logs.medical_log")
-    # cursor.execute("DELETE FROM logs.patients")
-    # cursor.execute("DELETE FROM logs.doctors")
     conn.commit()
 
     if conn:
