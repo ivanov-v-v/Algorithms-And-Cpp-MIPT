@@ -211,7 +211,7 @@ public:
         _size = other._size;
     }
     List (List&& other) {
-        _memoryManager = other._memoryManager;
+        _memoryManager = std::move(other._memoryManager);
         _tail = insert_after(_tail, std::move(other._head->_value));
         _head = _tail;
         for (Node* it = other._head->_next; it; it = it->_next) {
@@ -232,7 +232,7 @@ public:
     }
     List& operator =(List&& other) {
         _cleanUp();
-        _memoryManager = other._memoryManager;
+        _memoryManager = std::move(other._memoryManager);
         _tail = insert_after(_tail, std::move(other._head->_value));
         _head = _tail;
         for (Node* it = other._head->_next; it; it = it->_next) {
