@@ -105,7 +105,7 @@ def get_patient_ids():
     try:
         patient_name = read_while_not_set("Patient's name: ", on_bad_input="Patient's name can't be empty")
         db_queries.get_ids_by_pname(patient_name)
-    except:
+    except Exception:
         print("Can't get the ids")
         raise
 
@@ -114,12 +114,12 @@ def get_patient_ids():
 def get_patient_data():
     try:
         patient_id = read_while_not_set("Patient's id: ", on_bad_input="Id must be set")
-    except:
+    except Exception:
         raise
     if db_queries.check_id_existence(table_name='logs.patients', id_name='patient_id', id_val=patient_id):
         try:
             db_queries.show_patient_personal_data(patient_id)
-        except:
+        except Exception:
             print("Database error: can't show patient's data")
             raise
     else:
@@ -130,12 +130,12 @@ def get_patient_data():
 def get_patient_history():
     try:
         patient_id = read_while_not_set("Patient's id: ", on_bad_input="Id must be set")
-    except:
+    except Exception:
         raise
     if db_queries.check_id_existence(table_name='logs.patients', id_name='patient_id', id_val=patient_id):
         try:
             db_queries.show_patient_history(patient_id=patient_id)
-        except:
+        except Exception:
             print("Database error: can't show patient's history")
             raise
     else:
@@ -146,7 +146,7 @@ def get_patient_history():
 def create_doctor_profile():
     try:
         db_queries.create_doctor_profile()
-    except:
+    except Exception:
         print("Database error: can't create doctor's profile")
         raise
 
@@ -155,12 +155,12 @@ def create_doctor_profile():
 def update_doctor_profile():
     try:
         doctor_id = read_while_not_set("Doctor's id: ", on_bad_input="Id must be set")
-    except:
+    except Exception:
         raise
     if db_queries.check_id_existence(table_name='logs.doctors', id_name='doctor_id', id_val=doctor_id):
         try:
             db_queries.update_doctor_profile(doctor_id)
-        except:
+        except Exception:
             print("Database error: can't update doctor's profile")
             raise
     else:
@@ -172,7 +172,7 @@ def get_doctor_ids():
     try:
         doctor_name = read_while_not_set("Doctor's name: ", on_bad_input="Doctor's name can't be empty")
         db_queries.get_ids_by_dname(doctor_name)
-    except:
+    except Exception:
         print("Can't get the ids")
         raise
 
@@ -181,12 +181,12 @@ def get_doctor_ids():
 def get_doctor_data():
     try:
         doctor_id = read_and_process("Type the doctor's id: ")
-    except:
+    except Exception:
         raise
     if db_queries.check_id_existence(table_name='logs.doctors', id_name='doctor_id', id_val=doctor_id):
         try:
             db_queries.show_doctor_personal_data(doctor_id)
-        except:
+        except Exception:
             print("Database error: can't show doctor's data")
             raise
     else:
@@ -199,7 +199,7 @@ def set_appointment():
         patient_id = read_while_not_set("Patient's id: ", on_bad_input="Id must be set")
         doctor_id = read_while_not_set("Doctor's id: ", on_bad_input="Id must be set")
         db_queries.add_session(patient_id, doctor_id)
-    except:
+    except Exception:
         print("Database error: can't add a session")
         raise
 
@@ -209,7 +209,7 @@ def show_table():
     try:
         table_name = read_while_not_set("Type the table's name: ", on_bad_input="Table name can't be empty")
         db_queries.show_table(table_name)
-    except:
+    except Exception:
         print("No such table")
         raise
 
@@ -325,21 +325,21 @@ if __name__ == '__main__':
         elif command == '/drop_table':
             try:
                 cursor.execute("DROP SCHEMA IF EXISTS logs CASCADE;")
-            except:
+            except Exception:
                 print("Execute failed: can't drop a table")
             try:
                 conn.commit()
-            except:
+            except Exception:
                 print("Commit failed: can't apply changes")
         elif command == '/restart_table':
             try:
                 cursor.execute(open("DDL.sql", "r").read())
                 os.system("fill_table.py")
-            except:
+            except Exception:
                 print("Cannot restart table")
             try:
                 conn.commit()
-            except:
+            except Exception:
                 print("Commit failed: can't apply changes")
         elif command == '/exit':
             print("Session finished")

@@ -1,10 +1,7 @@
 DROP SCHEMA IF EXISTS logs CASCADE;
 
-CREATE SCHEMA logs
-  AUTHORIZATION postgres;
 
-COMMENT ON SCHEMA logs
-  IS 'MIPT DB CourseProject';
+CREATE DATABASE project OWNER postgres;
 
 CREATE TABLE logs.patients (
     patient_id		SERIAL	NOT NULL,
@@ -178,5 +175,5 @@ CREATE TABLE logs.surgeries_undergone (
     PRIMARY KEY (intervention_id),
     FOREIGN KEY (case_id) REFERENCES logs.medical_log (case_id),
     FOREIGN KEY (surgery_id) REFERENCES logs.surgeries (surgery_id),
-    FOREIGN KEY (surgeon_id) REFERENCES logs.doctors (doctor_id)  
+    FOREIGN KEY (surgeon_id) REFERENCES logs.doctors (doctor_id)
 );
