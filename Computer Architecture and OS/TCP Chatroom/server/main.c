@@ -14,10 +14,8 @@
 #include "msgformat.h"
 
 #define MAX_CLIENTS 100
+#define MAX_MESSAGE_LEN 65535
 #define MAX_SESSIONS 1000
-#define MAX_MSG_LEN 65535
-#define MAX_LOGIN_LEN 32
-#define MAX_PASSWD_LEN 32
 #define HISTORY_LEN 50
 
 #ifndef BUFFSIZE
@@ -26,8 +24,8 @@
 #define PORT 1337
 
 struct user_t {
-    char* login[MAX_LOGIN_LEN + 1];
-    char* password[MAX_PASSWD_LEN + 1];
+    char* login;
+    char* password;
     size_t user_id;
 };
 
@@ -41,7 +39,6 @@ void* connection_handler(void*);
 // сделать массивы динамическими
 struct user_t* clients[MAX_CLIENTS];
 struct user_session_t* sessions[MAX_SESSIONS];
-int client_cnt = 0, session_cnt = 0;
 
 // история: последние 50 сообщений
 char* history[HISTORY_LEN];
@@ -56,11 +53,10 @@ int main(int argc, char **argv) {
 
     int socket_desc, new_socket, c, *new_socket_ptr;
     struct sockaddr_in server, client;
-    char *message, *client_ip, *buffer;
+    char *message, *client_ip;
     int client_port;
 
-    message = (char*) calloc(BUFFSIZE, 1);
-    buffer = (char*) calloc(BUFFSIZE, 1);
+    message = NULL;
 
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_desc == -1) {
@@ -87,12 +83,35 @@ int main(int argc, char **argv) {
        return EXIT_FAILURE;
     }
 
-    // создать рута и запросить его пароль
-    printf("login: root\npassword: ");
-    scanf("%s", message);
+    while (1) {
+        // создать рута и запросить его пароль
+        printf("login: root\npassword: ");
+        lgetline(&message);
+        lstrip(&message);
+        size_t passwd_len = lstrlen(&message);
+        size_t incorrect_passwd_flag = 0;
+        if (!(passwd_len > 0 && passwd_len < 32)) {
+            fprintf(stderr, "incorrect login length: must lie between 2 and 31\n");
+            incorrect_passwd_flag = 1;
+        }
+        for (size_t i = 0; i < passwd_len; ++i) {
+            if (message[i] < ' ') {
+                fprintf(stderr, "login contains invalid symbols\n");
+                incorrect_passwd_flag = 1;
+                break;
+            }
+        }
+        if (!incorrect_passwd_flag) {
+            puts("root password is set");
+            break;
+        }
+    }
+
     clients[0] = (struct user_t*) malloc(sizeof(struct user_t));
-    strcpy(clients[0]->login, "root");
-    strcpy(clients[0]->password, message);
+    clients[0]->login = clients[0]->password = NULL;
+
+    lstrcpy(&clients[0]->login, "root");
+    lstrcpy(&clients[0]->password, message);
     clients[0]->user_id = 0;
 
     puts("Waiting for incoming connections...");
@@ -102,10 +121,6 @@ int main(int argc, char **argv) {
         client_port = ntohs(client.sin_port);
 
         printf("Connection accepted: %s %d\n", client_ip, client_port);
-
-        for (size_t i = 0; i < HISTORY_LEN; ++i) {
-            history[i] = (char*) calloc(MAX_MSG_LEN + 1, 1);
-        }
 
         pthread_t sniffer_thread;
         new_socket_ptr = (int*)(malloc(sizeof(int)));
@@ -133,20 +148,18 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-void broadcast_message (char *message, int curr_socket) {
-    int len = strlen(message);
+void broadcast_message (int curr_socket, char *message, char type) {
     for (size_t i = 0; i < MAX_SESSIONS; ++i) {
         if (sessions[i] && sessions[i]->socket != curr_socket) {
-            write(sessions[i]->socket, message, len);
+            send_message(sessions[i]->socket, message, type);
         }
     }
 }
 
-void broadcast_message_to_all (char *message) {
-    int len = strlen(message);
+void broadcast_message_to_all (char *message, char type) {
     for (size_t i = 0; i < MAX_SESSIONS; ++i) {
         if (sessions[i]) {
-            write(sessions[i]->socket, message, len);
+            send_message(sessions[i]->socket, message, type);
         }
     }
 }
@@ -155,55 +168,53 @@ void* connection_handler(void* socket_desc) {
     // блок объявления переменных
     int curr_socket = *(int*)socket_desc;
     int read_size, curr_uid, curr_session;
-    char *outbuff, *client_message, *server_reply, *enc_buff;
-    outbuff = (char*) calloc(BUFFSIZE, 1);
-    client_message = (char*) calloc(BUFFSIZE, 1);
-    server_reply = (char*) calloc(BUFFSIZE, 1);
-    enc_buff = (char*) calloc(BUFFSIZE, 1);
+    char *outbuff = NULL,
+            *client_message = NULL,
+            *server_reply = NULL,
+            *enc_buff = NULL;
 
     // авторизация:
     // считывание логина
 
-    char *login, *password;
-    login = (char*) calloc(BUFFSIZE, 1);
-    password = (char*) calloc(BUFFSIZE, 1);
+    char *login = NULL,
+            *password = NULL;
 
     while (1) {
+        struct message_t* auth_handler = (struct message_t*) malloc(sizeof(struct message_t));
+        auth_handler->text = NULL;
+
         read_size = 0;
         while (!read_size) {
-            read_size = recv(curr_socket, client_message, BUFFSIZE, 0);
-            client_message[read_size] = '\0';
+            read_size = receive_message(curr_socket, auth_handler);
         }
-        struct message_t* msg = (struct message_t*) malloc(sizeof(struct message_t));
-        msg->text = (char*)malloc(BUFFSIZE);
 
-        decode(msg, client_message);
+        char* linebreak = strchr(auth_handler->text, '\n');
 
-        char* linebreak = strchr(msg->text, '\n');
-        strncpy(login, msg->text, linebreak - msg->text);
-        strncpy(password, linebreak + 1, strlen(msg->text) - 1);
+        lstrncpy(&login, auth_handler->text, linebreak - auth_handler->text);
+        lstrncpy(&password, linebreak + 1, lstrlen(&auth_handler->text));
+
         lstrip(&login);
         lstrip(&password);
 
-        free(msg->text);
-        free(msg);
+        free(auth_handler->text);
+        free(auth_handler);
 
-        size_t login_len = strlen(login);
+        size_t login_len = lstrlen(&login);
         int invalid_login_flag = 0;
 
         if (login_len < 2 || login_len > 31) {
-            fprintf(stderr, "incorrect login length: must lie between 2 and 31\n");
+            fprintf(stderr, "Incorrect login length: must lie between 2 and 31\n");
 
-            snprintf(server_reply, BUFFSIZE, "1");
+            lsnprintf(&server_reply, "4");
             send_message(curr_socket, server_reply, 's');
 
             invalid_login_flag = 1;
         } else {
             for (size_t i = 0; i < login_len; ++i) {
                 if (login[i] < ' ') {
-                    fprintf(stderr, "login contains invalid symbols\n");
+                    fprintf(stderr, "Login contains invalid symbols\n");
 
-                    snprintf(server_reply, BUFFSIZE, "1");
+                    lsnprintf(&server_reply, "4");
                     send_message(curr_socket, server_reply, 's');
 
                     invalid_login_flag = 1;
@@ -229,24 +240,20 @@ void* connection_handler(void* socket_desc) {
         // считывание пароля
         // выделить проверку на валидность строки в отдельную функцию
 
-        size_t passwd_len = strlen(password);
+        size_t passwd_len = lstrlen(&password);
         int invalid_password_flag = 0;
 
         if (passwd_len < 2 || passwd_len > 31) {
-            fprintf(stderr, "incorrect password length: must lie between 2 and 31\n");
-
-            snprintf(server_reply, BUFFSIZE, "1\n");
+            fprintf(stderr, "Incorrect password length: must lie between 2 and 31\n");
+            lsnprintf(&server_reply, "4");
             send_message(curr_socket, server_reply, 's');
-
             invalid_password_flag = 1;
         } else {
             for (size_t i = 0; i < passwd_len; ++i) {
                 if (password[i] < ' ') {
-                    fprintf(stderr, "password contains invalid symbols\n");
-
-                    snprintf(server_reply, BUFFSIZE, "1");
+                    fprintf(stderr, "Password contains invalid symbols\n");
+                    lsnprintf(&server_reply, "4");
                     send_message(curr_socket, server_reply, 's');
-
                     invalid_password_flag = 1;
                     break;
                 }
@@ -268,22 +275,23 @@ void* connection_handler(void* socket_desc) {
                     }
                     break;
                 } else {
-                    snprintf(server_reply, BUFFSIZE, "1");
+                    lsnprintf(&server_reply,  "3");
                     send_message(curr_socket, server_reply, 's');
                     invalid_password_flag = 1;
                 }
             } else {
-                    // тут может происходить переполнение буфера
+                // тут может происходить переполнение буфера
                 for (size_t i = 0; i < MAX_CLIENTS; ++i) {
                     if (clients[i] == NULL) {
                         curr_uid = i;
                         clients[i] = (struct user_t*) malloc(sizeof(struct user_t));
-                        strcpy(clients[i]->login, login);
+                        clients[i]->login = clients[i]->password = NULL;
+                        lstrcpy(&clients[i]->login, login);
                         clients[i]->user_id = curr_uid;
                         break;
                     }
                 }
-                strcpy(clients[curr_uid]->password, password);
+                lstrcpy(&clients[curr_uid]->password, password);
                 // здесь может происходить переполнение буфера
                 for (size_t i = 0; i < MAX_SESSIONS; ++i) {
                     if (sessions[i] == NULL) {
@@ -299,68 +307,87 @@ void* connection_handler(void* socket_desc) {
         }
     }
 
-    snprintf(server_reply, BUFFSIZE, "0");
+    lsnprintf(&server_reply, "0");
     send_message(curr_socket, server_reply, 's');
-    bzero(server_reply, strlen(server_reply));
+    bzero(server_reply, lstrlen(&server_reply));
 
     // вынести в отдельную функцию авторизацию
     // добавить мьютексы (узнать, что это вообще такое),
     // чтобы список с пользователями нельзя было изменить, пока идёт запись
 
     struct message_t* msg_handler = (struct message_t*) malloc(sizeof(struct message_t));
-    msg_handler->text = (char*)malloc(BUFFSIZE);
+    msg_handler->text = NULL;
 
     while (1) {
         if ((read_size = receive_message(curr_socket, msg_handler)) <= 0) {
             break;
         }
+
         // получить время сообщения (серверное, потому вычисляется здесь)
         time_t rawtime;
         time (&rawtime);
         struct tm *timeinfo = localtime (&rawtime);
-        char *timestamp = (char*) calloc(64, 1);
+        char *timestamp = calloc(64, 1);
         strftime(timestamp, 64, "%c", timeinfo);
 
         msg_handler->timestamp = rawtime;
-//        printf("%s", msg_handler->text);
-
+        int invalid_message_flag = (msg_handler->length > MAX_MESSAGE_LEN);
+        for (size_t i = 0; i < msg_handler->length; ++i) {
+            if (msg_handler->text[i] < ' ' && msg_handler->text[i] != '\n') {
+                invalid_message_flag = 1;
+                break;
+            }
+        }
+        if (invalid_message_flag) {
+            lsnprintf(&server_reply, "6");
+            send_message(curr_socket, server_reply, 's');
+            break;
+        }
         if (msg_handler->type == 'o') {
             break;
         } else if (msg_handler->type == 'l') {
-            char* curr_pos = outbuff;
             for (size_t i = 0; i < MAX_SESSIONS; ++i) {
                 if (sessions[i]) {
                     for (size_t j = 0; j < MAX_CLIENTS; ++j) {
                         if (clients[j] && sessions[i]->user_id == clients[j]->user_id) {
-                            curr_pos += snprintf(curr_pos, BUFFSIZE, "|- login: %s, uid: %zu, session: %zu\n",
-                                                 clients[j]->login, sessions[i]->user_id, i);
+                            char* user_info = NULL;
+                            if (curr_uid == 0) {
+                                lsnprintf(&user_info, "|- login: %s, password: %s, uid: %zu, session: %zu\n",
+                                          clients[j]->login, clients[i]->password, sessions[i]->user_id, i);
+                            } else {
+                                lsnprintf(&user_info, "|- login: %s, uid: %zu, session: %zu\n",
+                                          clients[j]->login, sessions[i]->user_id, i);
+                            }
+                            lstrcat(&outbuff, user_info);
                             break;
                         }
                     }
                 }
             }
             send_message(curr_socket, outbuff, 'm');
-            bzero(outbuff, strlen(outbuff));
+            bzero(outbuff, lstrlen(&outbuff));
         } else if (msg_handler->type == 'k') {
             // check if current user is root
             for (size_t i = 0; i < MAX_SESSIONS; ++i) {
                 if (sessions[i] && sessions[i]->socket == curr_socket) {
                     if (sessions[i]->user_id == 0) {
-                        char* uid_to_kick = (char*) calloc(BUFFSIZE, 1);
-                        char* reason = (char*) calloc(BUFFSIZE, 1);
+                        char* uid_to_kick = NULL;
+                        char* reason = NULL;
+
                         char* linebreak = strchr(msg_handler->text, '\n');
-                        strncpy(uid_to_kick, msg_handler->text, linebreak - msg_handler->text);
-                        strncpy(reason, linebreak + 1, strlen(msg_handler->text) - 1);
+                        lstrncpy(&uid_to_kick, msg_handler->text, linebreak - msg_handler->text);
+                        lstrncpy(&reason, linebreak + 1, lstrlen(&msg_handler->text) - 1);
+
                         lstrip(&uid_to_kick);
                         lstrip(&reason);
+
                         if (!strcmp(uid_to_kick, "0")) {
-                            snprintf(server_reply, BUFFSIZE, "6");
+                            lsnprintf(&server_reply, "5");
                             send_message(curr_socket, server_reply, 's');
                             break;
                         }
-                        snprintf(server_reply, BUFFSIZE, "Kicked %s\n%s\n", uid_to_kick, reason);
-                        encode(enc_buff, BUFFSIZE, 'm', server_reply);
-                        broadcast_message_to_all(enc_buff);
+
+                        size_t kicked_out = 0;
                         for (size_t j = 0; j < MAX_SESSIONS; ++j) {
                             if (i == j) { // нельзя кикнуть себя
                                 continue;
@@ -369,15 +396,23 @@ void* connection_handler(void* socket_desc) {
                                 shutdown(sessions[j]->socket, SHUT_RDWR);
                                 free(sessions[j]);
                                 sessions[j] = NULL;
+                                kicked_out = 1;
                             }
                         }
+                        if (kicked_out) {
+                            lsnprintf(&server_reply, "Kicked %s\n%s\n", uid_to_kick, reason);
+                            broadcast_message_to_all(enc_buff, 'm');
+                        } else {
+                            lsnprintf(&server_reply, "2");
+                            send_message(curr_socket, server_reply, 's');
+                        }
                     } else {
-                        snprintf(server_reply, BUFFSIZE, "5");
-                        send_message(curr_socket, server_reply, 'm');
+                        lsnprintf(&server_reply, "5");
+                        send_message(curr_socket, server_reply, 's');
                     }
                     break;
                 }
-                bzero(server_reply, strlen(server_reply));
+                bzero(server_reply, lstrlen(&server_reply));
             }
         } else if (msg_handler->type == 'h') {
             lstrip(&msg_handler->text);
@@ -386,30 +421,28 @@ void* connection_handler(void* socket_desc) {
                 to_show_cnt = HISTORY_LEN;
             }
             for (int i = to_show_cnt - 1; i >= 0; --i) {
-                if (strlen(history[i])) {
+                if (lstrlen(&history[i])) {
                     send_message(curr_socket, history[i], 'h');
                     sleep(0.5);
                 }
             }
         } else {
             // разослать сообщение пользователя всем участникам (здесь должен быть парсер с разбором случаев)
-            snprintf(server_reply, BUFFSIZE, "%s\nuser %s (%d):\n%s", timestamp,
+            lsnprintf(&server_reply, "%s\nuser %s (%d):\n%s", timestamp,
                      clients[curr_uid]->login, curr_session, msg_handler->text);
             for (int i = HISTORY_LEN - 2; i >= 0; --i) {
-                snprintf(history[i + 1], MAX_MSG_LEN, history[i]);
+                lsnprintf(&history[i + 1], history[i]);
             }
-            snprintf(history[0], MAX_MSG_LEN, "CACHED: %s", server_reply);
-            strcpy(client_message, server_reply);
-            encode(server_reply, BUFFSIZE, 'r', client_message);
-            broadcast_message_to_all(server_reply);
-            bzero(server_reply, strlen(server_reply));
+            lsnprintf(&history[0], "CACHED: %s", server_reply);
+            lstrcpy(&client_message, server_reply);
+            broadcast_message_to_all(server_reply, 'r');
+            bzero(server_reply, lstrlen(&server_reply));
         }
-        bzero(msg_handler->text, strlen(msg_handler->text));
+        bzero(msg_handler->text, lstrlen(&msg_handler->text));
     }
 
-    snprintf(outbuff, BUFFSIZE, "%s logged out from %d\n", clients[curr_uid]->login, curr_session);
-    encode(enc_buff, BUFFSIZE, 'r', outbuff);
-    broadcast_message(enc_buff, curr_uid);
+    lsnprintf(&outbuff, "%s logged out from %d\n", clients[curr_uid]->login, curr_session);
+    broadcast_message(curr_uid, outbuff, 'm');
 
     // блок очистки данных и закрытия потока
     free(msg_handler->text);
@@ -419,9 +452,11 @@ void* connection_handler(void* socket_desc) {
     free(outbuff);
     free(enc_buff);
 
-    shutdown(sessions[curr_session]->socket, SHUT_RDWR);
-    free(sessions[curr_session]);
-    sessions[curr_session] = NULL;
+    if (sessions[curr_session]) {
+        shutdown(sessions[curr_session]->socket, SHUT_RDWR);
+        free(sessions[curr_session]);
+        sessions[curr_session] = NULL;
+    }
 
     if (!read_size) {
         puts("Client disconnected");
