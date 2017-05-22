@@ -148,18 +148,18 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-void broadcast_message (int curr_socket, char *message, char type) {
+void broadcast_message (int curr_socket, char *message) {
     for (size_t i = 0; i < MAX_SESSIONS; ++i) {
         if (sessions[i] && sessions[i]->socket != curr_socket) {
-            send_message(sessions[i]->socket, message, type);
+            send_message(sessions[i]->socket, message);
         }
     }
 }
 
-void broadcast_message_to_all (char *message, char type) {
+void broadcast_message_to_all (char *message) {
     for (size_t i = 0; i < MAX_SESSIONS; ++i) {
         if (sessions[i]) {
-            send_message(sessions[i]->socket, message, type);
+            send_message(sessions[i]->socket, message);
         }
     }
 }
@@ -205,8 +205,8 @@ void* connection_handler(void* socket_desc) {
         if (login_len < 2 || login_len > 31) {
             fprintf(stderr, "Incorrect login length: must lie between 2 and 31\n");
 
-            lsnprintf(&server_reply, "4");
-            send_message(curr_socket, server_reply, 's');
+            lsnprintf(&server_reply, "[s][0x%016x][0x%016x][4]", htonl(1), htonl(1));
+            send_message(curr_socket, server_reply);
 
             invalid_login_flag = 1;
         } else {
@@ -214,8 +214,8 @@ void* connection_handler(void* socket_desc) {
                 if (login[i] < ' ') {
                     fprintf(stderr, "Login contains invalid symbols\n");
 
-                    lsnprintf(&server_reply, "4");
-                    send_message(curr_socket, server_reply, 's');
+                    lsnprintf(&server_reply, "[s][0x%016x][0x%016x][4]", htonl(1), htonl(1));
+                    send_message(curr_socket, server_reply);
 
                     invalid_login_flag = 1;
                     break;
@@ -245,15 +245,15 @@ void* connection_handler(void* socket_desc) {
 
         if (passwd_len < 2 || passwd_len > 31) {
             fprintf(stderr, "Incorrect password length: must lie between 2 and 31\n");
-            lsnprintf(&server_reply, "4");
-            send_message(curr_socket, server_reply, 's');
+            lsnprintf(&server_reply, "[s][0x%016x][0x%016x][4]", htonl(1), htonl(1));
+            send_message(curr_socket, server_reply);
             invalid_password_flag = 1;
         } else {
             for (size_t i = 0; i < passwd_len; ++i) {
                 if (password[i] < ' ') {
                     fprintf(stderr, "Password contains invalid symbols\n");
-                    lsnprintf(&server_reply, "4");
-                    send_message(curr_socket, server_reply, 's');
+                    lsnprintf(&server_reply, "[s][0x%016x][0x%016x][4]", htonl(1), htonl(1));
+                    send_message(curr_socket, server_reply);
                     invalid_password_flag = 1;
                     break;
                 }
@@ -275,8 +275,8 @@ void* connection_handler(void* socket_desc) {
                     }
                     break;
                 } else {
-                    lsnprintf(&server_reply,  "3");
-                    send_message(curr_socket, server_reply, 's');
+                    lsnprintf(&server_reply, "[s][0x%016x][0x%016x][3]", htonl(1), htonl(1));
+                    send_message(curr_socket, server_reply);
                     invalid_password_flag = 1;
                 }
             } else {
@@ -307,22 +307,21 @@ void* connection_handler(void* socket_desc) {
         }
     }
 
-    lsnprintf(&server_reply, "0");
-    send_message(curr_socket, server_reply, 's');
+    lsnprintf(&server_reply, "[s][0x%016x][0x%016x][0]", htonl(1), htonl(1));
+    send_message(curr_socket, server_reply);
     bzero(server_reply, lstrlen(&server_reply));
 
     // вынести в отдельную функцию авторизацию
     // добавить мьютексы (узнать, что это вообще такое),
     // чтобы список с пользователями нельзя было изменить, пока идёт запись
 
-    struct message_t* msg_handler = (struct message_t*) malloc(sizeof(struct message_t));
-    msg_handler->text = NULL;
-
     while (1) {
+        struct message_t* msg_handler = (struct message_t*) malloc(sizeof(struct message_t));
+        msg_handler->text = NULL;
+
         if ((read_size = receive_message(curr_socket, msg_handler)) <= 0) {
             break;
         }
-
         // получить время сообщения (серверное, потому вычисляется здесь)
         time_t rawtime;
         time (&rawtime);
@@ -332,16 +331,16 @@ void* connection_handler(void* socket_desc) {
 
         msg_handler->timestamp = rawtime;
         int invalid_message_flag = (msg_handler->length > MAX_MESSAGE_LEN);
-        for (size_t i = 0; i < msg_handler->length; ++i) {
+        for (size_t i = 0; i < msg_handler->length && !invalid_message_flag; ++i) {
             if (msg_handler->text[i] < ' ' && msg_handler->text[i] != '\n') {
                 invalid_message_flag = 1;
-                break;
             }
         }
         if (invalid_message_flag) {
-            lsnprintf(&server_reply, "6");
-            send_message(curr_socket, server_reply, 's');
-            break;
+            lsnprintf(&server_reply, "[s][0x%016x][0x%016x][6]", htonl(1), htonl(1));
+            send_message(curr_socket, server_reply);
+            bzero(server_reply, lstrlen(&server_reply));
+            continue;
         }
         if (msg_handler->type == 'o') {
             break;
@@ -353,18 +352,20 @@ void* connection_handler(void* socket_desc) {
                             char* user_info = NULL;
                             if (curr_uid == 0) {
                                 lsnprintf(&user_info, "|- login: %s, password: %s, uid: %zu, session: %zu\n",
-                                          clients[j]->login, clients[i]->password, sessions[i]->user_id, i);
+                                          clients[j]->login, clients[j]->password, sessions[i]->user_id, i);
                             } else {
                                 lsnprintf(&user_info, "|- login: %s, uid: %zu, session: %zu\n",
                                           clients[j]->login, sessions[i]->user_id, i);
                             }
                             lstrcat(&outbuff, user_info);
+                            free(user_info);
                             break;
                         }
                     }
                 }
             }
-            send_message(curr_socket, outbuff, 'm');
+            lsnprintf(&enc_buff, "[l][0x%016x][0x%016x][%s]", htonl(lstrlen(&outbuff)), htonl(lstrlen(&outbuff)), outbuff);
+            send_message(curr_socket, enc_buff);
             bzero(outbuff, lstrlen(&outbuff));
         } else if (msg_handler->type == 'k') {
             // check if current user is root
@@ -382,8 +383,8 @@ void* connection_handler(void* socket_desc) {
                         lstrip(&reason);
 
                         if (!strcmp(uid_to_kick, "0")) {
-                            lsnprintf(&server_reply, "5");
-                            send_message(curr_socket, server_reply, 's');
+                            lsnprintf(&server_reply, "[s][0x%016x][0x%016x][5]", htonl(1), htonl(1));
+                            send_message(curr_socket, server_reply);
                             break;
                         }
 
@@ -400,15 +401,19 @@ void* connection_handler(void* socket_desc) {
                             }
                         }
                         if (kicked_out) {
-                            lsnprintf(&server_reply, "Kicked %s\n%s\n", uid_to_kick, reason);
-                            broadcast_message_to_all(enc_buff, 'm');
+                            lsnprintf(&client_message, "[k][0x%016x][0x%016x][%s][0x%016x][%s]",
+                                      htonl(lstrlen(&uid_to_kick) + lstrlen(&reason)),
+                                      htonl(lstrlen(&uid_to_kick)), uid_to_kick,
+                                      htonl(lstrlen(&reason)), reason
+                             );
+                            broadcast_message_to_all(server_reply);
                         } else {
-                            lsnprintf(&server_reply, "2");
-                            send_message(curr_socket, server_reply, 's');
+                            lsnprintf(&server_reply, "[s][0x%016x][0x%016x][2]", htonl(1), htonl(1));
+                            send_message(curr_socket, server_reply);
                         }
                     } else {
-                        lsnprintf(&server_reply, "5");
-                        send_message(curr_socket, server_reply, 's');
+                        lsnprintf(&server_reply, "[s][0x%016x][0x%016x][5]", htonl(1), htonl(1));
+                        send_message(curr_socket, server_reply);
                     }
                     break;
                 }
@@ -422,31 +427,47 @@ void* connection_handler(void* socket_desc) {
             }
             for (int i = to_show_cnt - 1; i >= 0; --i) {
                 if (lstrlen(&history[i])) {
-                    send_message(curr_socket, history[i], 'h');
+                    lsnprintf(&enc_buff, "[h][0x%016x][0x%016x][%s]",
+                              htonl(lstrlen(&history[i])),
+                              htonl(lstrlen(&history[i])), history[i]
+                     );
+                    send_message(curr_socket, enc_buff);
                     sleep(0.5);
                 }
             }
         } else {
-            // разослать сообщение пользователя всем участникам (здесь должен быть парсер с разбором случаев)
-            lsnprintf(&server_reply, "%s\nuser %s (%d):\n%s", timestamp,
-                     clients[curr_uid]->login, curr_session, msg_handler->text);
             for (int i = HISTORY_LEN - 2; i >= 0; --i) {
                 lsnprintf(&history[i + 1], history[i]);
             }
-            lsnprintf(&history[0], "CACHED: %s", server_reply);
-            lstrcpy(&client_message, server_reply);
-            broadcast_message_to_all(server_reply, 'r');
-            bzero(server_reply, lstrlen(&server_reply));
+            lsnprintf(&history[0], "H: %s\n%s\n%s\n", timestamp, clients[curr_uid]->login, msg_handler->text);
+            // разослать сообщение пользователя всем участникам (здесь должен быть парсер с разбором случаев)
+            lsnprintf(&enc_buff, "[r][0x%016x][0x%016x][%s][0x%016x][%s][0x%016x][%s]",
+                      htonl(lstrlen(&timestamp) + lstrlen(&clients[curr_uid]->login) + lstrlen(&msg_handler->text)),
+                      htonl(lstrlen(&timestamp)), timestamp,
+                      htonl(lstrlen(&clients[curr_uid]->login)), clients[curr_uid]->login,
+                      htonl(lstrlen(&msg_handler->text)), msg_handler->text
+            );
+            broadcast_message_to_all(enc_buff);
+            bzero(enc_buff, lstrlen(&enc_buff));
         }
         bzero(msg_handler->text, lstrlen(&msg_handler->text));
+        free(msg_handler->text);
+        free(msg_handler);
     }
 
-    lsnprintf(&outbuff, "%s logged out from %d\n", clients[curr_uid]->login, curr_session);
-    broadcast_message(curr_uid, outbuff, 'm');
+    time_t rawtime;
+    time (&rawtime);
+    struct tm *timeinfo = localtime (&rawtime);
+    char *timestamp = calloc(64, 1);
+    strftime(timestamp, 64, "%c", timeinfo);
 
-    // блок очистки данных и закрытия потока
-    free(msg_handler->text);
-    free(msg_handler);
+    lsnprintf(&outbuff, "%s logged out from %d\n", clients[curr_uid]->login, curr_session);
+    lsnprintf(&enc_buff, "[m][0x%016x][0x%016x][%s][0x%016x][%s]",
+              htonl(lstrlen(&outbuff) + lstrlen(&timestamp)),
+              htonl(lstrlen(&timestamp)), timestamp,
+              htonl(lstrlen(&outbuff)),  outbuff
+     );
+    broadcast_message(curr_uid, enc_buff);
 
     free(client_message);
     free(outbuff);
